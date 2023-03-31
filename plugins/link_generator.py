@@ -58,3 +58,24 @@ async def link_generator(client: Client, message: Message):
     link = f"https://t.me/{client.username}?start={base64_string}"
     reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔁 Share URL", url=f'https://telegram.me/share/url?url={link}')]])
     await channel_message.reply_text(f"<b>Here is your link</b>\n\n{link}", quote=True, reply_markup=reply_markup)
+    
+@Bot.on_message(filters.command(["imdb", 'search']))
+async def imdb_search(client, message):
+    if ' ' in message.text:
+        k = await message.reply('Searching ImDB')
+        r, title = message.text.split(None, 1)
+        movies = await get_poster(title, bulk=True)
+        if not movies:
+            return await message.reply("No results Found")
+        btn = [
+            [
+                InlineKeyboardButton(
+                    text=f"{movie.get('title')} - {movie.get('year')}",
+                    callback_data=f"imdb#{movie.movieID}",
+                )
+            ]
+            for movie in movies
+        ]
+        await k.edit('Here is what i found on IMDb', reply_markup=InlineKeyboardMarkup(btn))
+    else:
+        await message.reply('Give me a movie / series Name')
